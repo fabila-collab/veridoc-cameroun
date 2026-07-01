@@ -1,0 +1,7 @@
+/vendor/
+.env
+*.log
+config/database.php
+.DS_Store
+Thumbs.db
+composer.lock
