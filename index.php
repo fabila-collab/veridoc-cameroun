@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="login-container">
+     <div class="login-container">
         <h1>Connexion Établissement</h1>
         <?php if ($message): ?>
             <div class="message"><?= htmlspecialchars($message) ?></div>
@@ -72,5 +72,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit">Se connecter</button>
         </form>
     </div>
-</body>
+</body> 
 </html>
