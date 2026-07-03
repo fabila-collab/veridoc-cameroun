@@ -1,0 +1,479 @@
+/* =====================================================================
+   VeriDoc Cameroun — public/index.php + public/verify.php
+   ---------------------------------------------------------------------
+   Direction : un "tampon officiel" numérique. Le fond profond façon
+   registre relié en cuir, la carte couleur papier posée dessus, et un
+   filigrane guilloché (le motif à fines lignes gravées qu'on trouve
+   sur les diplômes, billets et cartes d'identité pour dissuader la
+   contrefaçon) relient directement le design au métier : vérifier
+   l'authenticité d'un document.
+
+   Tokens
+   - Couleur  : --ink-950/900/800 (fond), --paper (carte), --brass
+                (accent tampon), --forest (valide), --brick (révoqué)
+   - Type     : Bitter (titres, slab serif "officiel"), Inter (texte),
+                JetBrains Mono (codes et données — lisibilité chiffres)
+   - Signature: le tampon circulaire animé + le filigrane guilloché
+   ===================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
+
+:root {
+  --ink-950: #0a1220;
+  --ink-900: #0f1b2d;
+  --ink-800: #182a42;
+  --ink-700: #223a58;
+  --ink-line: rgba(228, 200, 120, 0.16);
+
+  --paper: #efe9db;
+  --paper-dim: #e2dac8;
+  --ink-text: #1c2431;
+  --ink-text-muted: #5c6577;
+
+  --brass: #c89b3c;
+  --brass-light: #e4c878;
+  --forest: #2f6e52;
+  --forest-light: #dcefe3;
+  --brick: #b23b30;
+  --brick-light: #f5ded9;
+
+  --font-display: 'Bitter', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --radius: 14px;
+  --shadow-card: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: dark; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--ink-950);
+  color: var(--paper);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--brass-light);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------- En-tête ------------------------------------------------- */
+
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2.25rem 1.5rem 1rem;
+  text-align: center;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--brass);
+  background:
+    radial-gradient(circle at 50% 50%, transparent 4px, var(--brass) 4.6px, transparent 5.2px),
+    conic-gradient(from 0deg, var(--brass-light) 0 8%, transparent 8% 17%) ;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  color: var(--paper);
+}
+
+.brand-text-accent { color: var(--brass-light); }
+
+.site-tagline {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-text-muted);
+  color: #93a0b3;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Filigrane guilloché -------------------------------------- */
+
+.watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.watermark::before,
+.watermark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(900px, 140vw);
+  height: min(900px, 140vw);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      var(--ink-line) 0,
+      var(--ink-line) 1px,
+      transparent 1px,
+      transparent 9px
+    );
+  opacity: 0.7;
+  animation: girer 240s linear infinite;
+}
+
+.watermark::after {
+  width: min(650px, 100vw);
+  height: min(650px, 100vw);
+  animation-direction: reverse;
+  animation-duration: 180s;
+  opacity: 0.5;
+}
+
+@keyframes girer {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ---------- Zones principales ---------------------------------------- */
+
+.verify-hero,
+.result-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 1.25rem 4rem;
+  min-height: 60vh;
+}
+
+.verify-card,
+.result-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  background: var(--paper);
+  color: var(--ink-text);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 2.25rem 1.75rem;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  line-height: 1.25;
+  margin: 0 0 0.65rem;
+  color: var(--ink-text);
+}
+
+.lede {
+  margin: 0 auto 1.5rem;
+  max-width: 38ch;
+  color: var(--ink-text-muted);
+  font-size: 0.96rem;
+}
+
+/* ---------- Formulaire ------------------------------------------------ */
+
+.code-form { text-align: left; }
+
+.code-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--ink-text-muted);
+}
+
+.code-input-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.code-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 0.9rem;
+  border: 2px solid var(--paper-dim);
+  border-radius: 10px;
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-text);
+}
+
+.code-input::placeholder {
+  color: #a7aeb9;
+  letter-spacing: 0.03em;
+}
+
+.code-input:focus {
+  border-color: var(--brass);
+  outline: none;
+}
+
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ---------- Boutons ---------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1.3rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--ink-900);
+  color: var(--brass-light);
+}
+
+.btn-primary:hover { box-shadow: 0 6px 16px -6px rgba(15, 27, 45, 0.55); }
+
+.btn-ghost {
+  width: 100%;
+  background: transparent;
+  color: var(--ink-text);
+  border: 1.5px solid var(--paper-dim);
+}
+
+.btn-ghost:hover { border-color: var(--brass); }
+
+.btn-small {
+  width: auto;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 1.25rem;
+  color: var(--ink-text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--paper-dim);
+}
+
+/* ---------- Scanner caméra ---------------------------------------------- */
+
+.scan-panel {
+  margin-top: 1.25rem;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ink-950);
+  padding: 1rem;
+  text-align: center;
+}
+
+#scan-video {
+  width: 100%;
+  border-radius: 8px;
+  background: #000;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.scan-frame {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 62%;
+  aspect-ratio: 1;
+  border: 2px solid var(--brass-light);
+  border-radius: 12px;
+  box-shadow: 0 0 0 999px rgba(10, 18, 32, 0.35);
+  pointer-events: none;
+}
+
+.scan-status {
+  margin: 0.85rem 0 0;
+  font-size: 0.85rem;
+  color: #cdd6e3;
+}
+
+/* ---------- Tampon (résultat) -------------------------------------------- */
+
+.stamp {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid currentColor;
+  position: relative;
+  transform: rotate(-8deg) scale(0.85);
+  animation: tamponner 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+
+.stamp::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px dashed currentColor;
+  opacity: 0.55;
+}
+
+.stamp-icon {
+  font-size: 2.1rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.stamp-valide  { color: var(--forest); }
+.stamp-revoque { color: var(--brick); }
+.stamp-neutral { color: var(--brass); }
+
+@keyframes tamponner {
+  to { transform: rotate(-8deg) scale(1); }
+}
+
+.result-valide h1      { color: var(--forest); }
+.result-revoque h1     { color: var(--brick); }
+
+.result-card.result-valide  { background: linear-gradient(var(--forest-light), var(--paper) 55%); }
+.result-card.result-revoque { background: linear-gradient(var(--brick-light), var(--paper) 55%); }
+
+/* ---------- Détails du document ------------------------------------------ */
+
+.doc-details {
+  text-align: left;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--paper-dim);
+  border-radius: 10px;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.doc-details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px dashed var(--paper-dim);
+  padding-bottom: 0.6rem;
+}
+
+.doc-details > div:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.doc-details dt {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-text-muted);
+}
+
+.doc-details dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-align: right;
+  color: var(--ink-text);
+}
+
+/* ---------- Pied de page + note de confiance ------------------------------ */
+
+.trust-note {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #8b96a8;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.78rem;
+  color: #6b7688;
+}
+
+/* ---------- Accessibilité / mobile ----------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .watermark::before,
+  .watermark::after,
+  .stamp {
+    animation: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .code-input-row { flex-direction: column; }
+  .verify-card, .result-card { padding: 1.75rem 1.25rem; }
+}

@@ -18,3 +18,14 @@ CREATE TABLE documents (
   date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (etablissement_id) REFERENCES etablissements(id)
   );
+
+-- Ajouté par Personne 3 : journal des tentatives de vérification
+-- publique, utilisé par includes/rate_limit.php pour bloquer les
+-- scripts qui testent des codes au hasard (anti brute-force).
+CREATE TABLE verification_attempts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  adresse_ip VARCHAR(45) NOT NULL,
+  code_tente VARCHAR(50) DEFAULT NULL,
+  date_tentative DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_ip_date (adresse_ip, date_tentative)
+  );
